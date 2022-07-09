@@ -3,16 +3,6 @@ from flask import Flask, request, render_template, redirect, flash
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import Survey, Question, satisfaction_survey
 
-# satisfaction_survey = Survey(
-#     "Customer Satisfaction Survey",
-#     "Please fill out a survey about your experience with us.",
-#     [
-#         Question("Have you shopped here before?"),
-#         Question("Did someone else shop with you today?"),
-#         Question("On average, how much do you spend a month on frisbees?",
-#                  ["Less than $10,000", "$10,000 or more"]),
-#         Question("Are you likely to shop here again?"),
-#     ])
 
 responses = []
 page = 0
@@ -20,6 +10,8 @@ page = 0
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = "hayduke"
+
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS']= False
 
 debug = DebugToolbarExtension(app)
 
@@ -36,11 +28,31 @@ def introduce_survey():
 def question(number):
     """This is a question template that will be reused for each question"""
     number =  int(number)
-    print(f"{number} and {len(responses)} ")
-    if not number == len(responses):
+
+    """ This checks if the user is trying to 
+    put in a question they shouldn't access 
+    it will send them to the Q that they are on"""
+
+    
+
+    # if not number == len(responses):
+    #     flash("You tried to access a question out of order", 'error')
+    #     new_page = ""
+    #     new_page =  "/question/" + str(len(responses))
+    #     return redirect(new_page)
+    # elif len(satisfaction_survey.questions) == len(responses):
+    #     flash("You have already completed the survey!", 'error')   
+    #     return redirect('/end_of_survey')
+
+    if  len(satisfaction_survey.questions) == len(responses):
+        flash("You have already completed the survey!", 'error')
         new_page = ""
         new_page =  "/question/" + str(len(responses))
+        return redirect('/end_of_survey')
+    elif not number == len(responses):
+        flash("You tried to access a question out of order", 'error')    
         return redirect(new_page)
+
 
     question = satisfaction_survey.questions[number].question
     options = satisfaction_survey.questions[number].choices
@@ -55,9 +67,13 @@ def add_response():
     responses.append(answer)
     new_page =  "/question/" + str(len(responses))
     
-    if len(satisfaction_survey.questions) == len(responses):
-         return render_template('thank_you.html')
+    if len(satisfaction_survey.questions) == len(responses):      
+        return redirect('/end_of_survey')
     else:
         return redirect(new_page)
+
+@app.route('/end_of_survey')
+def end_of_survey():
+        return render_template('thank_you.html')
 
 
