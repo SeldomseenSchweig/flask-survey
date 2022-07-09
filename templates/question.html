@@ -7,7 +7,7 @@
 
 <form method="POST" action="/answer">
     {% for option in options %}
-   <label for="{{option}}">{{option}}</label> <input type="radio" name="answer"  value="{{number}}">
+   <label for="{{option}}">{{option}}</label> <input type="radio" name="response"  value="{{option}}">
    {% endfor %}
    <input type="submit">
    

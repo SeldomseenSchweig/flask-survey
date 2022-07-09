@@ -15,7 +15,7 @@ from surveys import Survey, Question, satisfaction_survey
 #     ])
 
 responses = []
-number = 0
+page = 0
 
 app = Flask(__name__)
 
@@ -34,18 +34,30 @@ def introduce_survey():
 
 @app.route('/question/<number>')
 def question(number):
-    number =  int(number)
     """This is a question template that will be reused for each question"""
+    number =  int(number)
+    print(f"{number} and {len(responses)} ")
+    if not number == len(responses):
+        new_page = ""
+        new_page =  "/question/" + str(len(responses))
+        return redirect(new_page)
+
     question = satisfaction_survey.questions[number].question
     options = satisfaction_survey.questions[number].choices
     return render_template('question.html', question= question, options= options, number = number)
 
 @app.route('/answer', methods=["POST"])
 def add_response():
-
+    new_page = ""
     """This will send the answer to the response list and 
-    redirect to next question, with a flash"""
-    answer = request.form['answer']
-    print("hello - " + answer)
+    redirect to next question or to the end of the survey Thank You page, with a flash"""
+    answer = request.form['response']
     responses.append(answer)
-    return redirect("/question/3")
+    new_page =  "/question/" + str(len(responses))
+    
+    if len(satisfaction_survey.questions) == len(responses):
+         return render_template('thank_you.html')
+    else:
+        return redirect(new_page)
+
+
